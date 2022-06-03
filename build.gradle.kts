@@ -12,6 +12,15 @@ repositories {
 }
 
 dependencies {
+    val picoCliVersion = "4.6.3"
+    implementation("info.picocli:picocli:$picoCliVersion")
+
+    val kubernetesClientVersion = "15.0.1"
+    implementation("io.kubernetes:client-java:$kubernetesClientVersion")
+
+    val guavaVersion = "31.1-jre"
+    implementation("com.google.guava:guava:$guavaVersion")
+
     testImplementation(kotlin("test"))
 }
 
