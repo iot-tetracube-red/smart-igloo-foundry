@@ -1,0 +1,17 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: smart-igloo-db-data-pv-claim
+  labels:
+    app: smart-igloo-db
+spec:
+  storageClassName: manual
+  volumeName: smart-igloo-db-data-pv
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  selector:
+    matchLabels:
+      name: smart-igloo-db-data-pv

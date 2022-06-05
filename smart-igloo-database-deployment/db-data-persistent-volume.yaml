@@ -1,0 +1,16 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: smart-igloo-db-data-pv
+  labels:
+    type: local
+    app: smart-igloo-db
+    name: smart-igloo-db-data-pv
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /home/dave/smart_igloo_deploy/db_data

@@ -1,0 +1,8 @@
+apiVersion: v1
+
+kind: ConfigMap
+metadata:
+  name: igloo-db-storage
+data:
+  db-name: igloo_hub_db
+  db-username: smart_igloo_db_usr
