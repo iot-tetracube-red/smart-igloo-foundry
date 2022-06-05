@@ -80,3 +80,12 @@ deploy the load balancer service to expose PostgreSQL ports externally the clust
 ```shell
 kubectl apply -f smart-igloo-database-deployment/load-balancer-service.yaml -n smart-igloo-hub
 ```
+
+### Message broker deployment
+
+Open the file **smart-igloo-message-broker/config-map.yaml** and replace the url placeholder
+**{smart_igloo_url}**. The placeholder must be substituted with these values according the 
+options:
+* you are running the smart igloo hub service outside the cluster for some reason: the ip and port
+where the service is running;
+* the service will be deployed inside the cluster: **smart-igloo-hub**

@@ -1,0 +1,118 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: smart-igloo-hub-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: smart-igloo-hub-broker
+  template:
+    metadata:
+      labels:
+        app: smart-igloo-hub-broker
+    spec:
+      containers:
+        - name: smart-igloo-hub-broker
+          image: emqx/emqx-edge
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 1883
+            - containerPort: 18083
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-db-cfg-map
+                  optional: false
+                  key: db-username
+            - name: EMQX_LOADED_PLUGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_LOADED_PLUGINS
+            - name: EMQX_AUTH__HTTP__AUTH_REQ__URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_AUTH__HTTP__AUTH_REQ__URL
+            - name: EMQX_AUTH__HTTP__AUTH_REQ__METHOD
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_AUTH__HTTP__AUTH_REQ__METHOD
+            - name: EMQX_AUTH__HTTP__AUTH_REQ__HEADERS__CONTENT_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_AUTH__HTTP__AUTH_REQ__HEADERS__CONTENT_TYPE
+            - name: EMQX_AUTH__HTTP__AUTH_REQ__PARAMS
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_AUTH__HTTP__AUTH_REQ__PARAMS
+            - name: EMQX_WEB__HOOK__URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_WEB__HOOK__URL
+            - name: EMQX_WEB__HOOK__HEADERS__CONTENT_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_WEB__HOOK__HEADERS__CONTENT_TYPE
+            - name: EMQX_WEB__HOOK__BODY__ENCODING_OF_PAYLOAD_FIELD
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_WEB__HOOK__BODY__ENCODING_OF_PAYLOAD_FIELD
+            - name: EMQX_WEB__HOOK__POOL_SIZE
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_WEB__HOOK__POOL_SIZE
+            - name: EMQX_WEB__HOOK__ENABLE_PIPELINING
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_WEB__HOOK__ENABLE_PIPELINING
+            - name: EMQX_WEB__HOOK__RULE__CLIENT__CONNECT__1
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_WEB__HOOK__RULE__CLIENT__CONNECT__1
+            - name: EMQX_WEB__HOOK__RULE__CLIENT__CONNACK__1
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_WEB__HOOK__RULE__CLIENT__CONNACK__1
+            - name: EMQX_WEB__HOOK__RULE__CLIENT__CONNECTED__1
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_WEB__HOOK__RULE__CLIENT__CONNECTED__1
+            - name: EMQX_WEB__HOOK__RULE__CLIENT__DISCONNECTED__1
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_WEB__HOOK__RULE__CLIENT__DISCONNECTED__1
+            - name: EMQX_WEB__HOOK__RULE__SESSION__TERMINATED__1
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-broker-cfg-map
+                  optional: false
+                  key: EMQX_WEB__HOOK__RULE__SESSION__TERMINATED__1
