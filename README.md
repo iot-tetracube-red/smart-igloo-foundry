@@ -63,3 +63,20 @@ kubectl apply -f smart-igloo-database-deployment/db-data-persistent-volume.yaml 
     -f smart-igloo-database-deployment/db-init-persistent-volume-claim.yaml \
     -n smart-igloo-hub
 ```
+
+Now is possible deploy the PostgreSQL itself simply applying the deployment file:
+```shell
+kubectl apply -f smart-igloo-database-deployment/database-deployment.yaml -n smart-igloo-hub
+```
+
+The PostgreSQL needs to expose its services inside the Kubernetes cluster to allow other
+services to interact with it. Apply the service file for internal ports exposure:
+```shell
+kubectl apply -f smart-igloo-database-deployment/cluser-ip-service.yaml -n smart-igloo-hub
+```
+
+If you are developing, or you want to inspect database outside the cluster, you also need to 
+deploy the load balancer service to expose PostgreSQL ports externally the cluster:
+```shell
+kubectl apply -f smart-igloo-database-deployment/load-balancer-service.yaml -n smart-igloo-hub
+```

@@ -1,0 +1,51 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: smart-igloo-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: smart-igloo-db
+  template:
+    metadata:
+      labels:
+        app: smart-igloo-db
+    spec:
+      containers:
+        - name: smart-igloo-db
+          image: postgres
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-db-cfg-map
+                  optional: false
+                  key: db-name
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: smart-igloo-db-cfg-map
+                  optional: false
+                  key: db-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smart-igloo-db-credentials
+                  optional: false
+                  key: db-password
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: db-data-volume
+            - mountPath: /docker-entrypoint-initdb.d
+              name: init-db-volume
+      volumes:
+        - name: db-data-volume
+          persistentVolumeClaim:
+            claimName: smart-igloo-db-data-pv-claim
+        - name: init-db-volume
+          persistentVolumeClaim:
+            claimName: smart-igloo-init-db-pv-claim
