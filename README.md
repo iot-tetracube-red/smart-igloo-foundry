@@ -89,3 +89,9 @@ options:
 * you are running the smart igloo hub service outside the cluster for some reason: the ip and port
 where the service is running;
 * the service will be deployed inside the cluster: **smart-igloo-hub**
+
+```shell
+kubectl apply -f smart-igloo-message-broker/cluster-ip-service.yaml \
+  -f smart-igloo-message-broker/load-balancer-service.yaml \
+  -n smart-igloo-hub
+```
