@@ -115,6 +115,18 @@ kubectl apply -f smart-igloo-message-broker/broker-deployment.yaml -n smart-iglo
 
 ### Smart Igloo Hub deployment
 
+Change the placeholder **{broker_host_url}** in file **smart-igloo-hub/config-map.yaml**.
+The placeholder must be substituted with these values according the options:
+
+* you are running the smart igloo hub service outside the cluster for some reason: then specify the ip of the
+machine where is running the cluster (localhost if is same machine);
+* the service will be deployed inside the cluster: set **smart-igloo-hub-broker** as option value
+
+Then finally apply the config map:
+```shell
+kubectl apply -f smart-igloo-message-broker/config-map.yaml -n smart-igloo-hub
+```
+
 ```shell
 echo -n '<hub broker password>' > ./hub-broker-password
 ```
