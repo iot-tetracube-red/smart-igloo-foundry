@@ -20,12 +20,6 @@ spec:
             - containerPort: 1883
             - containerPort: 18083
           env:
-            - name: POSTGRES_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: smart-igloo-db-cfg-map
-                  optional: false
-                  key: db-username
             - name: EMQX_LOADED_PLUGINS
               valueFrom:
                 configMapKeyRef:

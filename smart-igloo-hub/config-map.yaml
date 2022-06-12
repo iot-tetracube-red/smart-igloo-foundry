@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: smart-igloo-hub-cfg-map
+data:
+  db-host: localhost
+  db-username: smart_igloo_db_usr
+  db-name: igloo_hub_db
+  igloo-name: Igloo Test
+  broker-host: {smart_igloo_url}
+  broker-port: "1883"

@@ -13,4 +13,4 @@ spec:
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: /home/dave/smart_igloo_deploy/db_data
+    path: {db_data_path}/db_data

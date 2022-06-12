@@ -13,4 +13,4 @@ spec:
   accessModes:
     - ReadOnlyMany
   hostPath:
-    path: /home/dave/smart_igloo_deploy/docker-entrypoint-initdb.d
+    path: {db_data_path}/docker-entrypoint-initdb.d
