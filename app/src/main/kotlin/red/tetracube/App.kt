@@ -2,6 +2,18 @@ package red.tetracube
 
 import io.kubernetes.client.openapi.apis.AppsV1Api
 import io.kubernetes.client.openapi.apis.CoreV1Api
+import red.tetracube.ApplicationGlobal.GREEN_BOLD
+import red.tetracube.ApplicationGlobal.RESET
+import red.tetracube.ApplicationGlobal.YELLOW_BOLD
+import java.io.File
+import java.io.FileNotFoundException
+import java.nio.charset.CodingErrorAction.REPLACE
+import java.nio.file.CopyOption
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+import kotlin.io.path.Path
+import kotlin.io.path.listDirectoryEntries
 
 class App {
 
@@ -17,7 +29,7 @@ class App {
         )
         val dbPassword = getUserInput(
             "${ApplicationGlobal.BLUE} \uD83D\uDD12 Database default password:${ApplicationGlobal.RESET}",
-            false,
+            true,
             null
         )
         val deploymentFolder = getUserInput(
@@ -31,6 +43,7 @@ class App {
             "(dev||prod)"
         )
 
+        prepareDiskStorage(deploymentFolder)
         startDeployment(kubernetesHostnameAddress, dbPassword)
     }
 
@@ -52,6 +65,51 @@ class App {
 
         Namespace(coreApi).createNamespace(namespaceName)
         DatabaseDeployment(appsApi, coreApi, namespaceName, databasePassword)
+    }
+
+    private fun prepareDiskStorage(deploymentFolder: String) {
+        val originSqlScriptPathString = this.javaClass.getResource("${File.separator}sql")?.path
+            ?: throw FileNotFoundException("Cannot find origin directory with init db scripts")
+
+        println("${GREEN_BOLD}Creating base DB Folder${RESET}")
+        val baseDeploymentPath =
+            try {
+                Files.createDirectory(Path("$deploymentFolder${File.separator}smart_igloo_deploy"))
+            } catch (exception: java.nio.file.FileAlreadyExistsException) {
+                println("${YELLOW_BOLD}Base deployment already exists${RESET}")
+                Path("$deploymentFolder${File.separator}smart_igloo_deploy")
+            }
+
+        val baseDbPath =
+            try {
+                Files.createDirectory(Path("${baseDeploymentPath}${File.separator}database"))
+            } catch (exception: java.nio.file.FileAlreadyExistsException) {
+                println("${YELLOW_BOLD}Database base path already exists${RESET}")
+                Path("${baseDeploymentPath}${File.separator}database")
+            }
+
+        val dataDbPath =
+            try {
+                Files.createDirectory(Path("${baseDbPath}${File.separator}data"))
+            } catch (exception: java.nio.file.FileAlreadyExistsException) {
+                println("${YELLOW_BOLD}Data path already exists${RESET}")
+                Path("${baseDbPath}${File.separator}data")
+            }
+
+        val entrypointDockerDbPath =
+            try {
+                Files.createDirectory(Path("${baseDbPath}${File.separator}docker-entrypoint-initdb.d"))
+            } catch (exception: java.nio.file.FileAlreadyExistsException) {
+                println("${YELLOW_BOLD}Docker entrypoint path already exists${RESET}")
+                Path("${baseDbPath}${File.separator}docker-entrypoint-initdb.d")
+            }
+
+        val originSqlScripts = Path(originSqlScriptPathString).listDirectoryEntries()
+        println("${GREEN_BOLD}Getting SQL files from $originSqlScripts${RESET}")
+        originSqlScripts.forEach { script ->
+            val filename = script.fileName
+            Files.copy(script, Path("$entrypointDockerDbPath${File.separator}$filename"), StandardCopyOption.REPLACE_EXISTING)
+        }
     }
 }
 
