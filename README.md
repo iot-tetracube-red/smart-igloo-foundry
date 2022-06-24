@@ -16,25 +16,6 @@ the kubernetes configurations and secrets to store in the cluster itself.
 
 ### Database deployment
 
-
-
-Now is time to prepare a folder where persist database's data files. This folder is used
-by kubernetes to persist database's date over deployments and upgrades. So in this way is possible
-upgrade, change or remove or scale database without loosing data stored in.
-
-To archive this, identify a folder in your system where you can create (as normal user) a folder
-and run the script *prepare_db_storage.py*:
-
-```shell
-python ./prepare_db_storage.py <base_deployment_path>
-```
-
-In the file **smart-igloo-database-deployment** open both files **db-data-persistent-volume.yaml**
-and **db-init-persistent-volume.yaml** and change the variable `{db_data_path}`
-with the path that you choose as base path when you launched the script of storage preparation above.
-
-Once the variables are updates, you can launch the deployment of the persistent volumes:
-
 ```shell
 kubectl apply -f smart-igloo-database-deployment/db-data-persistent-volume.yaml \
     -f smart-igloo-database-deployment/db-init-persistent-volume.yaml \

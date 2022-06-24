@@ -7,8 +7,6 @@ import red.tetracube.ApplicationGlobal.RESET
 import red.tetracube.ApplicationGlobal.YELLOW_BOLD
 import java.io.File
 import java.io.FileNotFoundException
-import java.nio.charset.CodingErrorAction.REPLACE
-import java.nio.file.CopyOption
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -43,8 +41,8 @@ class App {
             "(dev||prod)"
         )
 
-        prepareDiskStorage(deploymentFolder)
-        startDeployment(kubernetesHostnameAddress, dbPassword)
+        val preparedPaths = prepareDiskStorage(deploymentFolder)
+        startDeployment(kubernetesHostnameAddress, dbPassword, preparedPaths)
     }
 
     private fun getUserInput(inputLabel: String, optional: Boolean, regExValidation: String?): String {
@@ -58,16 +56,19 @@ class App {
 
     private fun startDeployment(
         kubernetesHostnameAddress: String,
-        databasePassword: String
+        databasePassword: String,
+        storagePaths: Map<PathType, Path>
     ) {
         appsApi.apiClient.basePath = kubernetesHostnameAddress
         coreApi.apiClient.basePath = kubernetesHostnameAddress
 
         Namespace(coreApi).createNamespace(namespaceName)
-        DatabaseDeployment(appsApi, coreApi, namespaceName, databasePassword)
+        DatabaseDeployment(appsApi, coreApi, namespaceName, databasePassword, storagePaths)
     }
 
-    private fun prepareDiskStorage(deploymentFolder: String) {
+    private fun prepareDiskStorage(deploymentFolder: String): Map<PathType, Path> {
+        val paths = HashMap<PathType, Path>()
+
         val originSqlScriptPathString = this.javaClass.getResource("${File.separator}sql")?.path
             ?: throw FileNotFoundException("Cannot find origin directory with init db scripts")
 
@@ -95,6 +96,7 @@ class App {
                 println("${YELLOW_BOLD}Data path already exists${RESET}")
                 Path("${baseDbPath}${File.separator}data")
             }
+        paths[PathType.DATA_DB_PATH] = dataDbPath
 
         val entrypointDockerDbPath =
             try {
@@ -103,13 +105,20 @@ class App {
                 println("${YELLOW_BOLD}Docker entrypoint path already exists${RESET}")
                 Path("${baseDbPath}${File.separator}docker-entrypoint-initdb.d")
             }
+        paths[PathType.DOCKER_ENTRYPOINT] = entrypointDockerDbPath
 
         val originSqlScripts = Path(originSqlScriptPathString).listDirectoryEntries()
         println("${GREEN_BOLD}Getting SQL files from $originSqlScripts${RESET}")
         originSqlScripts.forEach { script ->
             val filename = script.fileName
-            Files.copy(script, Path("$entrypointDockerDbPath${File.separator}$filename"), StandardCopyOption.REPLACE_EXISTING)
+            Files.copy(
+                script,
+                Path("$entrypointDockerDbPath${File.separator}$filename"),
+                StandardCopyOption.REPLACE_EXISTING
+            )
         }
+
+        return paths
     }
 }
 
