@@ -16,27 +16,7 @@ the kubernetes configurations and secrets to store in the cluster itself.
 
 ### Database deployment
 
-In first place you have to deploy database configuration map, in this file there are some static configurations
-for database deployment:
 
-```shell
-kubectl apply -f smart-igloo-database-deployment/config-map.yaml -n smart-igloo-hub
-```
-
-The database needs secrets to protect unwanted access from external applications. For this reason
-is essential to create default username and password to access and use the database itself.
-To archive this you need to create the credentials by typing this command to create username:
-
-```shell
-echo -n '<insert your password here>' > ./db-password
-```
-
-Then is possible to store secrets in kubernetes cluster referencing the right namespace:
-
-```shell
-kubectl create secret generic smart-igloo-db-credentials -n smart-igloo-hub \
-  --from-file=./db-password
-```
 
 Now is time to prepare a folder where persist database's data files. This folder is used
 by kubernetes to persist database's date over deployments and upgrades. So in this way is possible

@@ -1,7 +1,0 @@
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: smart-igloo-db-cfg-map
-data:
-  db-name: igloo_hub_db
-  db-username: smart_igloo_db_usr

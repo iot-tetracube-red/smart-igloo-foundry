@@ -31,7 +31,7 @@ class App {
             "(dev||prod)"
         )
 
-        startDeployment(kubernetesHostnameAddress)
+        startDeployment(kubernetesHostnameAddress, dbPassword)
     }
 
     private fun getUserInput(inputLabel: String, optional: Boolean, regExValidation: String?): String {
@@ -43,12 +43,15 @@ class App {
         return input
     }
 
-    private fun startDeployment(kubernetesHostnameAddress: String) {
+    private fun startDeployment(
+        kubernetesHostnameAddress: String,
+        databasePassword: String
+    ) {
         appsApi.apiClient.basePath = kubernetesHostnameAddress
         coreApi.apiClient.basePath = kubernetesHostnameAddress
 
         Namespace(coreApi).createNamespace(namespaceName)
-        DatabaseDeployment(appsApi, coreApi, namespaceName)
+        DatabaseDeployment(appsApi, coreApi, namespaceName, databasePassword)
     }
 }
 
