@@ -9,7 +9,6 @@ class App {
     private val coreApi: CoreV1Api = CoreV1Api()
     private val appsApi: AppsV1Api = AppsV1Api()
 
-
     fun getDeploymentProperties() {
         val kubernetesHostnameAddress = getUserInput(
             "${ApplicationGlobal.GREEN} \uD83C\uDFE1 Kubernetes hostname:${ApplicationGlobal.RESET}",
@@ -49,6 +48,7 @@ class App {
         coreApi.apiClient.basePath = kubernetesHostnameAddress
 
         Namespace(coreApi).createNamespace(namespaceName)
+        DatabaseDeployment(appsApi, coreApi, namespaceName)
     }
 }
 

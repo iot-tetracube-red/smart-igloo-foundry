@@ -14,15 +14,6 @@ possible to put data files and authorizations to operate in kubernetes cluster i
 If you want to develop or deploy production environment of the application server you need to prepare
 the kubernetes configurations and secrets to store in the cluster itself.
 
-### Namespace creation
-
-The namespace is essential to isolate the services in the kubernetes cluster. For this reason
-in first instance you need to deploy the namespace launching:
-
-```shell
-kubectl apply -f namespace/smart-igloo-namespace.yaml
-```
-
 ### Database deployment
 
 In first place you have to deploy database configuration map, in this file there are some static configurations
