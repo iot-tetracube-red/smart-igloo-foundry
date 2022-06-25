@@ -16,7 +16,8 @@ class DatabaseDeployment(
     private val coreApi: CoreV1Api,
     private val namespaceName: String,
     private val databasePassword: String,
-    private val storagePaths: Map<PathType, Path>
+    private val storagePaths: Map<PathType, Path>,
+    environmentType: String
 ) {
 
     init {
@@ -27,6 +28,10 @@ class DatabaseDeployment(
         createDbDockerEntrypointPersistentVolume()
         createDbDockerEntrypointPersistentVolumeClaim()
         deployDatabaseApplication()
+        exposeCluserIP()
+        if (environmentType == "dev") {
+            exposeLoadBalancer()
+        }
     }
 
     private fun createConfigMap() {
@@ -284,7 +289,7 @@ class DatabaseDeployment(
                 null,
                 null
             )
-            println("Persistent volume claim created")
+            println("${GREEN_BOLD}Persistent volume claim created${RESET}")
         } catch (exception: ApiException) {
             if (exception.code == 409) {
                 println("${YELLOW_BOLD}Data persistent volume claim exists${RESET}")
@@ -420,10 +425,98 @@ class DatabaseDeployment(
                 null,
                 null
             )
-            println("Deployment created")
+            println("${GREEN_BOLD}Deployment created${RESET}")
         } catch (exception: ApiException) {
             if (exception.code == 409) {
                 println("${YELLOW_BOLD}Database deployment exists${RESET}")
+            } else {
+                println("${RED_BOLD}${exception.responseBody}${RESET}")
+            }
+        }
+    }
+
+    private fun exposeCluserIP() {
+        println("Creating service DB service")
+        val clusterIPService = V1Service()
+            .metadata(
+                V1ObjectMeta()
+                    .name("smart-igloo-database-cip")
+                    .labels(
+                        mapOf(
+                            Pair("app", "smart-igloo-database")
+                        )
+                    )
+            )
+            .spec(
+                V1ServiceSpec()
+                    .type("ClusterIP")
+                    .ports(
+                        listOf(
+                            V1ServicePort().port(5432)
+                        )
+                    )
+                    .selector(
+                        mapOf(
+                            Pair("app", "smart-igloo-database")
+                        )
+                    )
+            )
+
+        try {
+            coreApi.createNamespacedService(
+                namespaceName,
+                clusterIPService,
+                "smart-igloo-database",
+                null,
+                null,
+                null
+            )
+            println("${GREEN_BOLD}ClusterIp created${RESET}")
+        } catch (exception: ApiException) {
+            if (exception.code == 409) {
+                println("${YELLOW_BOLD}Database ClusterIP exists${RESET}")
+            } else {
+                println("${RED_BOLD}${exception.responseBody}${RESET}")
+            }
+        }
+    }
+
+    private fun exposeLoadBalancer() {
+        println("Creating load balancer to access externally to the DB service")
+        val loadbalancer = V1Service()
+            .metadata(
+                V1ObjectMeta()
+                    .name("smart-igloo-database-lb")
+                    .labels(
+                        mapOf(
+                            Pair("app", "smart-igloo-database")
+                        )
+                    )
+            )
+            .spec(
+                V1ServiceSpec()
+                    .type("LoadBalancer")
+                    .ports(listOf(V1ServicePort().port(5432)))
+                    .selector(
+                        mapOf(
+                            Pair("app", "smart-igloo-database")
+                        )
+                    )
+            )
+
+        try {
+            coreApi.createNamespacedService(
+                namespaceName,
+                loadbalancer,
+                "smart-igloo-database",
+                null,
+                null,
+                null
+            )
+            println("${GREEN_BOLD}Load balancer created${RESET}")
+        } catch (exception: ApiException) {
+            if (exception.code == 409) {
+                println("${YELLOW_BOLD}Database Loadbalancer exists${RESET}")
             } else {
                 println("${RED_BOLD}${exception.responseBody}${RESET}")
             }

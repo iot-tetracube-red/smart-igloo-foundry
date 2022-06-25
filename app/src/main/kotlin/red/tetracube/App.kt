@@ -35,14 +35,14 @@ class App {
             true,
             null
         )
-        val deploymentId = getUserInput(
+        val environment = getUserInput(
             "${ApplicationGlobal.GREEN} \uD83D\uDC8E Is development or production environment? (dev|prod):${ApplicationGlobal.RESET}",
             false,
             "(dev||prod)"
         )
 
         val preparedPaths = prepareDiskStorage(deploymentFolder)
-        startDeployment(kubernetesHostnameAddress, dbPassword, preparedPaths)
+        startDeployment(kubernetesHostnameAddress, dbPassword, preparedPaths, environment)
     }
 
     private fun getUserInput(inputLabel: String, optional: Boolean, regExValidation: String?): String {
@@ -57,13 +57,14 @@ class App {
     private fun startDeployment(
         kubernetesHostnameAddress: String,
         databasePassword: String,
-        storagePaths: Map<PathType, Path>
+        storagePaths: Map<PathType, Path>,
+        environment: String
     ) {
         appsApi.apiClient.basePath = kubernetesHostnameAddress
         coreApi.apiClient.basePath = kubernetesHostnameAddress
 
         Namespace(coreApi).createNamespace(namespaceName)
-        DatabaseDeployment(appsApi, coreApi, namespaceName, databasePassword, storagePaths)
+        DatabaseDeployment(appsApi, coreApi, namespaceName, databasePassword, storagePaths, environment)
     }
 
     private fun prepareDiskStorage(deploymentFolder: String): Map<PathType, Path> {

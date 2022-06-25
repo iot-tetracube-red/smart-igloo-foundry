@@ -9,33 +9,14 @@ a kubernetes installation in a RaspberryPi 4 where are hosted also other service
 You need a valid kubernetes installation (on cloud or on your local network), a folder where is
 possible to put data files and authorizations to operate in kubernetes cluster itself.
 
-## Kubernetes preparation
+## The CLI
 
-If you want to develop or deploy production environment of the application server you need to prepare
-the kubernetes configurations and secrets to store in the cluster itself.
+Environment of deployment: 
+* *dev* - development: is kind of development suggested to users that want to develop or test on local
+environment the Smart Igloo Hub platform, then some services will be exposed on the bare metal machine
+* *prod* - production: will deploy all service in kubernetes and all services are exposed internally 
+and only mqtt port will be exposed externally to allow appliances to connect with the hub
 
-### Database deployment
-
-
-Now is possible deploy the PostgreSQL itself simply applying the deployment file:
-
-```shell
-kubectl apply -f smart-igloo-database-deployment/database-deployment.yaml -n smart-igloo-hub
-```
-
-The PostgreSQL needs to expose its services inside the Kubernetes cluster to allow other
-services to interact with it. Apply the service file for internal ports exposure:
-
-```shell
-kubectl apply -f smart-igloo-database-deployment/cluser-ip-service.yaml -n smart-igloo-hub
-```
-
-If you are developing, or you want to inspect database outside the cluster, you also need to
-deploy the load balancer service to expose PostgreSQL ports externally the cluster:
-
-```shell
-kubectl apply -f smart-igloo-database-deployment/load-balancer-service.yaml -n smart-igloo-hub
-```
 
 ### Message broker deployment
 
