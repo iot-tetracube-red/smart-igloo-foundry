@@ -16,13 +16,6 @@ the kubernetes configurations and secrets to store in the cluster itself.
 
 ### Database deployment
 
-```shell
-kubectl apply -f smart-igloo-database-deployment/db-data-persistent-volume.yaml \
-    -f smart-igloo-database-deployment/db-init-persistent-volume.yaml \
-    -f smart-igloo-database-deployment/db-data-persistent-volume-claim.yaml \
-    -f smart-igloo-database-deployment/db-init-persistent-volume-claim.yaml \
-    -n smart-igloo-hub
-```
 
 Now is possible deploy the PostgreSQL itself simply applying the deployment file:
 

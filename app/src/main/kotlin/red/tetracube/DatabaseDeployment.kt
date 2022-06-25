@@ -23,7 +23,9 @@ class DatabaseDeployment(
         createConfigMap()
         createSecret()
         createDbDataPersistentVolume()
+        createDbDataPersistentVolumeClaim()
         createDbDockerEntrypointPersistentVolume()
+        createDbDockerEntrypointPersistentVolumeClaim()
     }
 
     private fun createConfigMap() {
@@ -103,33 +105,33 @@ class DatabaseDeployment(
     }
 
     private fun createDbDataPersistentVolume() {
-            println("Creating DB persistent volume")
-            val persistentVolume = V1PersistentVolume()
-                .apiVersion("v1")
-                .metadata(
-                    V1ObjectMeta()
-                        .name("data-db-pv")
-                        .labels(
-                            mapOf(
-                                Pair("type", "local"),
-                                Pair("app", "smart-igloo-database")
-                            )
+        println("Creating DB persistent volume")
+        val persistentVolume = V1PersistentVolume()
+            .apiVersion("v1")
+            .metadata(
+                V1ObjectMeta()
+                    .name("data-db-pv")
+                    .labels(
+                        mapOf(
+                            Pair("type", "local"),
+                            Pair("app", "smart-igloo-database")
                         )
-                )
-                .spec(
-                    V1PersistentVolumeSpec()
-                        .storageClassName("manual")
-                        .capacity(
-                            mapOf(
-                                Pair("storage", Quantity.fromString("5Gi"))
-                            )
+                    )
+            )
+            .spec(
+                V1PersistentVolumeSpec()
+                    .storageClassName("manual")
+                    .capacity(
+                        mapOf(
+                            Pair("storage", Quantity.fromString("5Gi"))
                         )
-                        .accessModes(listOf("ReadWriteMany"))
-                        .hostPath(
-                            V1HostPathVolumeSource()
-                                .path(storagePaths[PathType.DATA_DB_PATH].toString())
-                        )
-                )
+                    )
+                    .accessModes(listOf("ReadWriteMany"))
+                    .hostPath(
+                        V1HostPathVolumeSource()
+                            .path(storagePaths[PathType.DATA_DB_PATH].toString())
+                    )
+            )
 
         try {
             coreApi.createPersistentVolume(
@@ -147,6 +149,53 @@ class DatabaseDeployment(
                 println("${RED_BOLD}${exception.responseBody}${RESET}")
             }
         }
+    }
+
+    private fun createDbDataPersistentVolumeClaim() {
+        println("Creating DB persistent volume claim")
+        val persistentVolumeClaim = V1PersistentVolumeClaim()
+            .apiVersion("v1")
+            .metadata(
+                V1ObjectMeta()
+                    .name("data-db-pvc")
+                    .labels(
+                        mapOf(
+                            Pair("app", "smart-igloo-database")
+                        )
+                    )
+            )
+            .spec(
+                V1PersistentVolumeClaimSpec()
+                    .storageClassName("manual")
+                    .accessModes(listOf("ReadWriteMany"))
+                    .resources(
+                        V1ResourceRequirements()
+                            .requests(
+                                mapOf(
+                                    Pair("storage", Quantity.fromString("5Gi"))
+                                )
+                            )
+                    )
+            )
+
+        try {
+            coreApi.createNamespacedPersistentVolumeClaim(
+                namespaceName,
+                persistentVolumeClaim,
+                "smart-igloo-database",
+                null,
+                null,
+                null
+            )
+            println("${GREEN_BOLD}Persistent volume claim created${RESET}")
+        } catch (exception: ApiException) {
+            if (exception.code == 409) {
+                println("${YELLOW_BOLD}Data persistent volume claim exists${RESET}")
+            } else {
+                println("${RED_BOLD}${exception.responseBody}${RESET}")
+            }
+        }
+
     }
 
     private fun createDbDockerEntrypointPersistentVolume() {
@@ -194,5 +243,54 @@ class DatabaseDeployment(
                 println("${RED_BOLD}${exception.responseBody}${RESET}")
             }
         }
+    }
+
+    private fun createDbDockerEntrypointPersistentVolumeClaim() {
+        println("Creating init DB persistent volume claim")
+        val persistentVolumeClaim = V1PersistentVolumeClaim()
+            .apiVersion("v1")
+            .metadata(
+                V1ObjectMeta()
+                    .name("init-db-pv-claim")
+                    .labels(
+                        mapOf(
+                            Pair("app", "smart-igloo-database")
+                        )
+                    )
+            )
+            .spec(
+                V1PersistentVolumeClaimSpec()
+                    .storageClassName("manual")
+                    .accessModes(
+                        listOf("ReadOnlyMany")
+                    )
+                    .resources(
+                        V1ResourceRequirements()
+                            .requests(
+                                mapOf(
+                                    Pair("storage", Quantity.fromString("10Mi"))
+                                )
+                            )
+                    )
+            )
+
+        try {
+            coreApi.createNamespacedPersistentVolumeClaim(
+                namespaceName,
+                persistentVolumeClaim,
+                "init-db-pv-claim",
+                null,
+                null,
+                null
+            )
+            println("Persistent volume claim created")
+        } catch (exception: ApiException) {
+            if (exception.code == 409) {
+                println("${YELLOW_BOLD}Data persistent volume claim exists${RESET}")
+            } else {
+                println("${RED_BOLD}${exception.responseBody}${RESET}")
+            }
+        }
+
     }
 }
