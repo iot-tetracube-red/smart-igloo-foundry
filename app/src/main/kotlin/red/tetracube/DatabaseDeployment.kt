@@ -26,6 +26,7 @@ class DatabaseDeployment(
         createDbDataPersistentVolumeClaim()
         createDbDockerEntrypointPersistentVolume()
         createDbDockerEntrypointPersistentVolumeClaim()
+        deployDatabaseApplication()
     }
 
     private fun createConfigMap() {
@@ -230,7 +231,7 @@ class DatabaseDeployment(
         try {
             coreApi.createPersistentVolume(
                 persistentVolume,
-                "data-docker-entrypoint-pv",
+                "docker-entrypoint-db-pv",
                 null,
                 null,
                 null
@@ -251,7 +252,7 @@ class DatabaseDeployment(
             .apiVersion("v1")
             .metadata(
                 V1ObjectMeta()
-                    .name("init-db-pv-claim")
+                    .name("docker-entrypoint-db-pvc")
                     .labels(
                         mapOf(
                             Pair("app", "smart-igloo-database")
@@ -278,7 +279,7 @@ class DatabaseDeployment(
             coreApi.createNamespacedPersistentVolumeClaim(
                 namespaceName,
                 persistentVolumeClaim,
-                "init-db-pv-claim",
+                "docker-entrypoint-db-pvc",
                 null,
                 null,
                 null
@@ -287,6 +288,142 @@ class DatabaseDeployment(
         } catch (exception: ApiException) {
             if (exception.code == 409) {
                 println("${YELLOW_BOLD}Data persistent volume claim exists${RESET}")
+            } else {
+                println("${RED_BOLD}${exception.responseBody}${RESET}")
+            }
+        }
+    }
+
+    private fun deployDatabaseApplication() {
+        println("Deploying DB app")
+        val deployment = V1Deployment()
+            .apiVersion("apps/v1")
+            .metadata(
+                V1ObjectMeta()
+                    .name("smart-igloo-database")
+                    .labels(
+                        mapOf(
+                            Pair("app", "smart-igloo-database")
+                        )
+                    )
+            )
+            .spec(
+                V1DeploymentSpec()
+                    .replicas(1)
+                    .selector(
+                        V1LabelSelector()
+                            .matchLabels(
+                                mapOf(
+                                    Pair("app", "smart-igloo-database")
+                                )
+                            )
+                    )
+                    .template(
+                        V1PodTemplateSpec()
+                            .metadata(
+                                V1ObjectMeta()
+                                    .labels(
+                                        mapOf(
+                                            Pair("app", "smart-igloo-database")
+                                        )
+                                    )
+                            )
+                            .spec(
+                                V1PodSpec()
+                                    .containers(
+                                        listOf(
+                                            V1Container()
+                                                .name("smart-igloo-database")
+                                                .image("postgres")
+                                                .imagePullPolicy("IfNotPresent")
+                                                .ports(
+                                                    listOf(
+                                                        V1ContainerPort()
+                                                            .containerPort(5432)
+                                                    )
+                                                )
+                                                .env(
+                                                    listOf(
+                                                        V1EnvVar()
+                                                            .name("POSTGRES_DB")
+                                                            .valueFrom(
+                                                                V1EnvVarSource()
+                                                                    .configMapKeyRef(
+                                                                        V1ConfigMapKeySelector()
+                                                                            .name("smart-igloo-db-config")
+                                                                            .optional(false)
+                                                                            .key("db-name")
+                                                                    )
+                                                            ),
+                                                        V1EnvVar()
+                                                            .name("POSTGRES_USER")
+                                                            .valueFrom(
+                                                                V1EnvVarSource()
+                                                                    .configMapKeyRef(
+                                                                        V1ConfigMapKeySelector()
+                                                                            .name("smart-igloo-db-config")
+                                                                            .optional(false)
+                                                                            .key("db-username")
+                                                                    )
+                                                            ),
+                                                        V1EnvVar()
+                                                            .name("POSTGRES_PASSWORD")
+                                                            .valueFrom(
+                                                                V1EnvVarSource()
+                                                                    .secretKeyRef(
+                                                                        V1SecretKeySelector()
+                                                                            .name("smart-igloo-db-secrets")
+                                                                            .optional(false)
+                                                                            .key("db-password")
+                                                                    )
+                                                            )
+                                                    )
+                                                )
+                                                .volumeMounts(
+                                                    listOf(
+                                                        V1VolumeMount()
+                                                            .mountPath("/var/lib/postgresql/data")
+                                                            .name("data-volume"),
+                                                        V1VolumeMount()
+                                                            .mountPath("/docker-entrypoint-initdb.d")
+                                                            .name("docker-entrypoint-volume")
+                                                    )
+                                                )
+                                        )
+                                    )
+                                    .volumes(
+                                        listOf(
+                                            V1Volume()
+                                                .name("docker-entrypoint-volume")
+                                                .persistentVolumeClaim(
+                                                    V1PersistentVolumeClaimVolumeSource()
+                                                        .claimName("docker-entrypoint-db-pvc")
+                                                ),
+                                            V1Volume()
+                                                .name("data-volume")
+                                                .persistentVolumeClaim(
+                                                    V1PersistentVolumeClaimVolumeSource()
+                                                        .claimName("data-db-pvc")
+                                                )
+                                        )
+                                    )
+                            )
+                    )
+            )
+
+        try {
+            appsApi.createNamespacedDeployment(
+                namespaceName,
+                deployment,
+                "smart-igloo-database",
+                null,
+                null,
+                null
+            )
+            println("Deployment created")
+        } catch (exception: ApiException) {
+            if (exception.code == 409) {
+                println("${YELLOW_BOLD}Database deployment exists${RESET}")
             } else {
                 println("${RED_BOLD}${exception.responseBody}${RESET}")
             }
