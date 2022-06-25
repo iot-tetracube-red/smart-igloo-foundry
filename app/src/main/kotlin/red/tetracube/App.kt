@@ -21,22 +21,22 @@ class App {
 
     fun getDeploymentProperties() {
         val kubernetesHostnameAddress = getUserInput(
-            "${ApplicationGlobal.GREEN} \uD83C\uDFE1 Kubernetes hostname:${ApplicationGlobal.RESET}",
+            "${ApplicationGlobal.GREEN} \uD83C\uDFE1 Kubernetes hostname:$RESET",
             false,
             null
         )
         val dbPassword = getUserInput(
-            "${ApplicationGlobal.BLUE} \uD83D\uDD12 Database default password:${ApplicationGlobal.RESET}",
+            "${ApplicationGlobal.BLUE} \uD83D\uDD12 Database default password:$RESET",
             true,
             null
         )
         val deploymentFolder = getUserInput(
-            "${ApplicationGlobal.BLUE} \uD83D\uDCC2 Deployment folder where persist data:${ApplicationGlobal.RESET}",
+            "${ApplicationGlobal.BLUE} \uD83D\uDCC2 Deployment folder where persist data:$RESET",
             true,
             null
         )
         val environment = getUserInput(
-            "${ApplicationGlobal.GREEN} \uD83D\uDC8E Is development or production environment? (dev|prod):${ApplicationGlobal.RESET}",
+            "${ApplicationGlobal.GREEN} \uD83D\uDC8E Is development or production environment? (dev|prod):$RESET",
             false,
             "(dev||prod)"
         )
@@ -65,6 +65,7 @@ class App {
 
         Namespace(coreApi).createNamespace(namespaceName)
         DatabaseDeployment(appsApi, coreApi, namespaceName, databasePassword, storagePaths, environment)
+        MqttBrokerDeployment(appsApi, coreApi, namespaceName, environment)
     }
 
     private fun prepareDiskStorage(deploymentFolder: String): Map<PathType, Path> {

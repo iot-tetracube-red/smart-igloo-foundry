@@ -28,7 +28,7 @@ class DatabaseDeployment(
         createDbDockerEntrypointPersistentVolume()
         createDbDockerEntrypointPersistentVolumeClaim()
         deployDatabaseApplication()
-        exposeCluserIP()
+        exposeClusterIP()
         if (environmentType == "dev") {
             exposeLoadBalancer()
         }
@@ -435,7 +435,7 @@ class DatabaseDeployment(
         }
     }
 
-    private fun exposeCluserIP() {
+    private fun exposeClusterIP() {
         println("Creating service DB service")
         val clusterIPService = V1Service()
             .metadata(
