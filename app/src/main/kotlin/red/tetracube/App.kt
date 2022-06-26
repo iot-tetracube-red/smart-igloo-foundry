@@ -66,6 +66,7 @@ class App {
         Namespace(coreApi).createNamespace(namespaceName)
         DatabaseDeployment(appsApi, coreApi, namespaceName, databasePassword, storagePaths, environment)
         MqttBrokerDeployment(appsApi, coreApi, namespaceName, environment)
+        SmartIglooHubDeployment(appsApi, coreApi, namespaceName, databasePassword, environment)
     }
 
     private fun prepareDiskStorage(deploymentFolder: String): Map<PathType, Path> {
