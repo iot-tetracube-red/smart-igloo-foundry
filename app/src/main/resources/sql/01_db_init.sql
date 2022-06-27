@@ -1,27 +1,10 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 create schema if not exists igloo_hub;
 
-create table igloo_hub.houses
-(
-    id         uuid         not null primary key,
-    name       varchar(255) not null unique,
-    house_type varchar(50)  not null
-);
-
 create table igloo_hub.environments
 (
-    id       uuid         not null primary key,
-    name     varchar(255) not null,
-    house_id uuid         not null references igloo_hub.houses (id)
-);
-
-create table igloo_hub.trusted_broker_clients
-(
-    id          uuid         not null primary key,
-    client_id   varchar(100) not null unique,
-    username    varchar(100) not null unique,
-    password    varchar(255) not null,
-    client_type varchar(50)  not null
+    id   uuid         not null primary key,
+    name varchar(255) not null
 );
 
 create table igloo_hub.accounts
@@ -31,31 +14,21 @@ create table igloo_hub.accounts
     password varchar(255) not null
 );
 
-create table igloo_hub.houses_accounts
-(
-    id         uuid        not null primary key,
-    account_id uuid        not null references igloo_hub.accounts (id),
-    house_id   uuid        not null references igloo_hub.houses (id),
-    role       varchar(50) not null
-);
-
 create table igloo_hub.switchers
 (
-    id                       uuid                  not null primary key,
-    display_name             varchar(255)          not null unique,
-    display_color            varchar(20)           not null,
-    feedback_topic           varchar(255)          not null unique,
-    command_topic            varchar(255)          not null unique,
-    is_online                boolean default false not null,
-    house_id                 uuid                  not null references igloo_hub.houses (id),
-    environment_id           uuid                  not null references igloo_hub.environments (id),
-    trusted_broker_client_id uuid                  not null references igloo_hub.trusted_broker_clients (id)
+    id              uuid                  not null primary key,
+    display_name    varchar(255)          not null unique,
+    display_color   varchar(20)           not null,
+    feedback_topic  varchar(255)          not null unique,
+    command_topic   varchar(255)          not null unique,
+    testament_topic varchar(255)          not null unique,
+    is_online       boolean default false not null,
+    environment_id  uuid references igloo_hub.environments (id)
 );
 
 create table igloo_hub.switchers_actions
 (
     id           uuid         not null primary key,
-    display_name varchar(255) not null,
     logic_state  varchar(50)  not null,
     mqtt_command varchar(255) not null,
     switcher_id  uuid         not null references igloo_hub.switchers (id)

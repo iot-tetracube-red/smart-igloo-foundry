@@ -35,8 +35,6 @@ class DatabaseDeployment(
     }
 
     private fun createConfigMap() {
-        val dbUsername = "igloo_nest_db_usr"
-
         println("Creating DB config map")
         val dbConfig = V1ConfigMap()
             .metadata(
@@ -50,8 +48,8 @@ class DatabaseDeployment(
             )
             .data(
                 mapOf(
-                    Pair("db-name", "igloo_nest_db"),
-                    Pair("db-username", dbUsername)
+                    Pair("db-name", "igloo_hub_db"),
+                    Pair("db-username", "smart_igloo_db_usr")
                 )
             )
         try {
